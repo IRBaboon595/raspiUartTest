@@ -61,15 +61,18 @@ private:
     uint64_t        time;
     QTimer          *timer_echo;
     QByteArray      ba;
+    QByteArray      ba_2;
 
-    std_union       len;
+    //std_union       len;
 
 private slots:
     void getEcho();
     void connectCOM();
     void getEcho_2();
     void connectCOM_2();
-    void readData(void);
+    void readData();
+    void readData_2();
+    void parseData(QByteArray *data, QString comName);
     void on_com_refresh_button_clicked();
     void timer_echo_timeout();
 
