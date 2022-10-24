@@ -35,6 +35,12 @@ typedef union{
     uint8_t 	cstd[8];
 }long_long_std_union;
 
+enum class Interface : uint8_t
+{
+    USB = 0,
+    UART = 1
+};
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -52,9 +58,10 @@ public:
 private:
     Ui::MainWindow *ui;
 
-    char            CRC = 0;
+    char            m_crc = 0;
 
-    uint8_t         uart_command;
+    uint8_t         m_uartCommand;
+    Interface       m_currentInterface;
 
     QString         *cur_temp;
 
@@ -78,5 +85,6 @@ private slots:
 
     void on_com_refresh_button_2_clicked();
     void on_sendPushButton_clicked();
+    void on_choseSenderSlider_sliderReleased();
 };
 #endif // MAINWINDOW_H

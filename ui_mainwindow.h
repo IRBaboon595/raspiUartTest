@@ -118,11 +118,12 @@ public:
         choseSenderSlider = new QSlider(com_groupbox_3);
         choseSenderSlider->setObjectName(QString::fromUtf8("choseSenderSlider"));
         choseSenderSlider->setGeometry(QRect(29, 40, 271, 20));
+        choseSenderSlider->setMaximum(1);
         choseSenderSlider->setOrientation(Qt::Horizontal);
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
-        menubar->setGeometry(QRect(0, 0, 800, 22));
+        menubar->setGeometry(QRect(0, 0, 800, 21));
         MainWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName(QString::fromUtf8("statusbar"));

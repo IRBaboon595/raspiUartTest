@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    m_currentInterface = Interface::USB;
 
     timer_echo = new QTimer();
     ui->getLineEdit->setText("Pisun");
@@ -21,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->echo_button, SIGNAL(clicked(bool)), this, SLOT(getEcho()));
     connect(ui->echo_button_2, SIGNAL(clicked(bool)), this, SLOT(getEcho_2()));
     connect(timer_echo, SIGNAL(timeout()), this, SLOT(timer_echo_timeout()));
+    connect(ui->choseSenderSlider, SIGNAL(sliderReleased()), this, SLOT(on_choseSenderSlider_sliderReleased()));
 
     connect(COM, SIGNAL(readyRead()), this, SLOT(readData()));
     connect(COM_2, SIGNAL(readyRead()), this, SLOT(readData_2()));
@@ -140,7 +142,16 @@ void MainWindow::getEcho_2()
 
 void MainWindow::timer_echo_timeout()
 {
+    /*if(m_currentInterface == Interface::USB)
+    {
+        ui->service_message_2->setText("Empty");
+    }
+    else
+    {
+        ui->service_message->setText("Empty");
+    }*/
     ui->service_message->setText("Empty");
+    ui->service_message_2->setText("Empty");
 }
 
 void MainWindow::on_com_refresh_button_clicked()
@@ -206,9 +217,9 @@ void MainWindow::parseData(QByteArray *data, QString comName)
                 qDebug() << "Address achieved";
                 for(int i = 0; i < len.istd; i++)
                 {
-                    CRC ^= data->at(i);
+                    m_crc ^= data->at(i);
                 }
-                if(CRC == 0)
+                if(m_crc == 0)
                 {
                     qDebug() << "XOR approved";
                     temp = data->at(4);
@@ -230,18 +241,18 @@ void MainWindow::parseData(QByteArray *data, QString comName)
                         }
 
                         timer_echo->start(1000);
-                        uart_command = 0;
+                        m_uartCommand = 0;
                         break;
                     case TEXT:
                         data->remove(0, 5);
                         data->truncate(len.istd - 6);
                         message.append(data->constData());
                         ui->getLineEdit->setText(message);
-                        uart_command = 1;
+                        m_uartCommand = 1;
                         break;
                     default:
 
-                        uart_command = 255;
+                        m_uartCommand = 255;
                         break;
                     }
                     trigger = false;
@@ -270,12 +281,13 @@ void MainWindow::parseData(QByteArray *data, QString comName)
         qDebug() << "No Synchro";
         data->clear();
     }
-    CRC = 0;
+    m_crc = 0;
 }
 
 void MainWindow::on_sendPushButton_clicked()
 {
     QByteArray ba_1;
+    QSerialPort *tempPort;
     char crc = 0;
 
     ba_1.append(SYNCHRO);
@@ -289,11 +301,34 @@ void MainWindow::on_sendPushButton_clicked()
         crc ^= ba_1.at(i);
     }
     ba_1.append(crc);
-    qDebug() << COM->readBufferSize();
-    if(COM->write(ba_1) != -1)
+
+    if(m_currentInterface == Interface::USB)
     {
-        COM->waitForBytesWritten(200);
-        COM->waitForReadyRead(100);
+        tempPort = COM;
+    }
+    else
+    {
+        tempPort = COM_2;
+    }
+
+    qDebug() << tempPort->readBufferSize();
+
+    if(tempPort->write(ba_1) != -1)
+    {
+        tempPort->waitForBytesWritten(200);
+        tempPort->waitForReadyRead(100);
+    }
+}
+
+void MainWindow::on_choseSenderSlider_sliderReleased()
+{
+    if(ui->choseSenderSlider->sliderPosition() == 0)
+    {
+        m_currentInterface = Interface::USB;
+    }
+    else
+    {
+        m_currentInterface = Interface::UART;
     }
 }
 
